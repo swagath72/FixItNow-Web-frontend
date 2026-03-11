@@ -1,0 +1,9 @@
+Total Users: 8
+ID=1, Email='ch@gmail.com', Role=Customer
+ID=2, Email='mr.swagath72@gmail.com', Role=Technician
+ID=3, Email='testuser@test.com', Role=None
+ID=4, Email='test2@test.com', Role=None
+ID=5, Email='layna4115@gmail.com', Role=Customer
+ID=6, Email='testuser2@example.com', Role=None
+ID=7, Email='s@gmail.com', Role=None
+ID=8, Email='testtech@gmail.com', Role=None
