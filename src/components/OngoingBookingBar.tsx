@@ -1,14 +1,14 @@
 import { useNavigate } from 'react-router';
 import { motion, AnimatePresence } from 'motion/react';
-import { MapPin, Clock, Wrench } from 'lucide-react';
+import { MapPin, Clock, Wrench, CreditCard } from 'lucide-react';
 import { useBooking } from '../contexts/BookingContext';
 
 export function OngoingBookingBar() {
   const navigate = useNavigate();
   const { ongoingBooking } = useBooking();
 
-  // Don't show if no booking or booking is completed
-  if (!ongoingBooking || ongoingBooking.status === 'completed') {
+  // Don't show if no booking
+  if (!ongoingBooking) {
     return null;
   }
 
@@ -20,6 +20,8 @@ export function OngoingBookingBar() {
         return { color: '#f97316', icon: MapPin };
       case 'in-progress':
         return { color: '#10b981', icon: Wrench };
+      case 'completed':
+        return { color: '#10b981', icon: CreditCard };
       default:
         return { color: '#136dec', icon: Clock };
     }

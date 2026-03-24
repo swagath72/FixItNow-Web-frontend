@@ -7,7 +7,6 @@ import {
   Settings, Heart, FileText, ChevronRight,
   Wallet, Globe, MessageSquare, Loader2, User
 } from 'lucide-react';
-import { OngoingBookingBar } from './OngoingBookingBar';
 import API from '../api';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -443,7 +442,6 @@ export function ProfileScreen({ role = 'customer' }: ProfileScreenProps) {
         </div>
       </div>
 
-      <OngoingBookingBar />
     </div>
   );
 }

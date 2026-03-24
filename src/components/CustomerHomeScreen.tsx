@@ -1,7 +1,6 @@
 import { useNavigate } from 'react-router';
 import { motion } from 'motion/react';
 import { MapPin, Zap, Droplet, AlertCircle, Clock, ChevronRight, TrendingUp, Loader2 } from 'lucide-react';
-import { OngoingBookingBar } from './OngoingBookingBar';
 import { useEffect, useState } from 'react';
 import API from '../api';
 import { useAuth } from '../contexts/AuthContext';
@@ -258,7 +257,6 @@ export function CustomerHomeScreen() {
         </div>
       </div>
 
-      <OngoingBookingBar />
     </div>
   );
 }

@@ -2,16 +2,17 @@ import type { ReactNode } from 'react';
 import { useNavigate, useLocation } from 'react-router';
 import {
   Home, Clock, MessageCircle, User, Zap, Menu, X,
-  Bell, HelpCircle, Settings,
+  Bell, HelpCircle,
   LogOut, ChevronRight, MapPin
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { OngoingBookingBar } from './OngoingBookingBar';
 
 interface WebLayoutProps {
   children: ReactNode;
-  role?: 'customer' | 'technician';
+  role?: 'customer' | 'technician' | 'admin';
   showSidebar?: boolean;
 }
 
@@ -34,10 +35,27 @@ export function WebLayout({
   useEffect(() => {
     const savedLocation = localStorage.getItem('userLocation');
     if (savedLocation) {
-      const loc = JSON.parse(savedLocation);
-      setUserLocation(`${loc.city}, ${loc.state}`);
+      try {
+        const loc = JSON.parse(savedLocation);
+        setUserLocation(`${loc.address || ''} ${loc.city || ''}, ${loc.state || ''}`.trim());
+      } catch (e) {
+        console.error('Error parsing userLocation', e);
+      }
+    } else if (user) {
+      // Fallback to user's saved profile address
+      const parts = [
+        user.house_number,
+        user.street,
+        user.area,
+        user.city,
+        user.state
+      ].filter(Boolean);
+      
+      if (parts.length > 0) {
+        setUserLocation(`${user.house_number || ''} ${user.area || user.street || ''}, ${user.city || ''}`.trim());
+      }
     }
-  }, []);
+  }, [location.pathname, user]);
 
   const customerNavItems = [
     { id: 'home', label: 'Home', icon: Home, path: '/customer/home' },
@@ -45,7 +63,6 @@ export function WebLayout({
     { id: 'chat', label: 'Messages', icon: MessageCircle, path: '/customer/chat-list' },
     { id: 'notifications', label: 'Notifications', icon: Bell, path: '/customer/notifications' },
     { id: 'help', label: 'Help Center', icon: HelpCircle, path: '/customer/help-center' },
-    { id: 'settings', label: 'Settings', icon: Settings, path: '/customer/app-settings' },
     { id: 'profile', label: 'Profile', icon: User, path: '/customer/profile' },
   ];
 
@@ -55,12 +72,15 @@ export function WebLayout({
     { id: 'chat', label: 'Messages', icon: MessageCircle, path: '/technician/chat-list' },
     { id: 'notifications', label: 'Notifications', icon: Bell, path: '/technician/notifications' },
     { id: 'help', label: 'Help Center', icon: HelpCircle, path: '/technician/help-center' },
-    { id: 'settings', label: 'Settings', icon: Settings, path: '/technician/app-settings' },
     { id: 'profile', label: 'Profile', icon: User, path: '/technician/profile' },
   ];
 
-  const currentRole = (role || user?.role || 'customer').toLowerCase() as 'customer' | 'technician';
-  const navItems = currentRole === 'customer' ? customerNavItems : technicianNavItems;
+  const adminNavItems = [
+    { id: 'dashboard', label: 'Admin Dashboard', icon: Home, path: '/admin/dashboard' },
+  ];
+
+  const currentRole = (role || user?.role || 'customer').toLowerCase() as 'customer' | 'technician' | 'admin';
+  const navItems = currentRole === 'admin' ? adminNavItems : currentRole === 'customer' ? customerNavItems : technicianNavItems;
 
   const handleLogout = () => {
     logout();
@@ -160,11 +180,11 @@ export function WebLayout({
                   <div className="flex items-center gap-1 w-full">
                     <MapPin className="w-4 h-4 text-[#136dec] flex-shrink-0" />
                     <span className="text-xs font-bold text-gray-800 truncate">
-                      {userLocation ? 'Your Location' : 'Set Location'}
+                      {userLocation ? 'Service Location' : 'Set Location'}
                     </span>
                   </div>
                   <span className="text-[10px] text-gray-500 w-full truncate text-left pl-5">
-                    {userLocation || 'Select your area'}
+                    {userLocation || 'Select your service area'}
                   </span>
                 </button>
               )}
@@ -352,7 +372,7 @@ export function WebLayout({
           {children}
         </main>
       </div>
-
+      {currentRole === 'customer' && <OngoingBookingBar />}
     </div>
   );
 }

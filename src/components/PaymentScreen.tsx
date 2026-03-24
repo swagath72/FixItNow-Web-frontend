@@ -67,8 +67,10 @@ export function PaymentScreen() {
           // Update status in backend (using numeric ID)
           await API.post('/technician/update-job-status', {
             booking_id: parseInt(ongoingBooking.id),
-            status: 'paid'
+            status: 'Completed'
           });
+          // Also mark as paid in the payment_status column using existing endpoint
+          await API.post(`/mock-pay/${ongoingBooking.id}`);
         } catch (err) {
           console.error('Finalizing payment error:', err);
           // Still proceed to close the UI after successful payment

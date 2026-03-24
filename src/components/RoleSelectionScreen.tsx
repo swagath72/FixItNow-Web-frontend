@@ -1,9 +1,18 @@
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { motion } from 'motion/react';
 import { User, Wrench, Zap, CheckCircle } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
 
 export function RoleSelectionScreen() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+
+  useEffect(() => {
+    if (user?.role?.toLowerCase() === 'admin') {
+      navigate('/admin/dashboard', { replace: true });
+    }
+  }, [user, navigate]);
 
   const roles = [
     {

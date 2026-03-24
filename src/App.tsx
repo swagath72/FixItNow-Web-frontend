@@ -23,6 +23,7 @@ import { JobRequestScreen } from './components/JobRequestScreen';
 import { JobNavigationScreen } from './components/JobNavigationScreen';
 import { JobCompletionScreen } from './components/JobCompletionScreen';
 import { EarningsScreen } from './components/EarningsScreen';
+import { TechnicianVerificationPendingScreen } from './components/TechnicianVerificationPendingScreen';
 import { ServiceHistoryScreen } from './components/ServiceHistoryScreen';
 import { JobHistoryScreen } from './components/JobHistoryScreen';
 import { ChatScreen } from './components/ChatScreen';
@@ -40,9 +41,10 @@ import { FavoritesScreen } from './components/FavoritesScreen';
 import { MyReviewsScreen } from './components/MyReviewsScreen';
 import { MembershipScreen } from './components/MembershipScreen';
 import { TermsScreen } from './components/TermsScreen';
-import { AppSettingsScreen } from './components/AppSettingsScreen';
 import { PrivacySecurityScreen } from './components/PrivacySecurityScreen';
 import { LanguageScreen } from './components/LanguageScreen';
+import { AdminDashboardScreen } from './components/AdminDashboardScreen';
+import { AdminVerificationScreen } from './components/AdminVerificationScreen';
 
 import { ProtectedRoute } from './components/ProtectedRoute';
 
@@ -81,13 +83,13 @@ const router = createBrowserRouter([
   { path: "/customer/my-reviews", element: <ProtectedRoute allowedRole="customer"><MyReviewsScreen /></ProtectedRoute> },
   { path: "/customer/membership", element: <ProtectedRoute allowedRole="customer"><MembershipScreen /></ProtectedRoute> },
   { path: "/customer/terms", element: <ProtectedRoute allowedRole="customer"><TermsScreen /></ProtectedRoute> },
-  { path: "/customer/app-settings", element: <ProtectedRoute allowedRole="customer"><AppSettingsScreen /></ProtectedRoute> },
   { path: "/customer/privacy-security", element: <ProtectedRoute allowedRole="customer"><PrivacySecurityScreen /></ProtectedRoute> },
   { path: "/customer/language", element: <ProtectedRoute allowedRole="customer"><LanguageScreen /></ProtectedRoute> },
 
   // Technician Routes
   { path: "/technician/register", element: <ProtectedRoute><TechnicianRegistrationScreen /></ProtectedRoute> },
   { path: "/technician/documents", element: <ProtectedRoute><DocumentUploadScreen /></ProtectedRoute> },
+  { path: "/technician/verification-pending", element: <ProtectedRoute><TechnicianVerificationPendingScreen /></ProtectedRoute> },
   { path: "/technician/dashboard", element: <ProtectedRoute allowedRole="technician"><TechnicianDashboardScreen /></ProtectedRoute> },
   { path: "/technician/job-request/:jobId", element: <ProtectedRoute allowedRole="technician"><JobRequestScreen /></ProtectedRoute> },
   { path: "/technician/job-navigation/:jobId", element: <ProtectedRoute allowedRole="technician"><JobNavigationScreen /></ProtectedRoute> },
@@ -107,9 +109,12 @@ const router = createBrowserRouter([
   { path: "/technician/my-reviews", element: <ProtectedRoute allowedRole="technician"><MyReviewsScreen /></ProtectedRoute> },
   { path: "/technician/membership", element: <ProtectedRoute allowedRole="technician"><MembershipScreen /></ProtectedRoute> },
   { path: "/technician/terms", element: <ProtectedRoute allowedRole="technician"><TermsScreen /></ProtectedRoute> },
-  { path: "/technician/app-settings", element: <ProtectedRoute allowedRole="technician"><AppSettingsScreen /></ProtectedRoute> },
   { path: "/technician/privacy-security", element: <ProtectedRoute allowedRole="technician"><PrivacySecurityScreen /></ProtectedRoute> },
   { path: "/technician/language", element: <ProtectedRoute allowedRole="technician"><LanguageScreen /></ProtectedRoute> },
+
+  // Admin Routes
+  { path: "/admin/dashboard", element: <ProtectedRoute allowedRole="admin"><AdminDashboardScreen /></ProtectedRoute> },
+  { path: "/admin/technician/:id", element: <ProtectedRoute allowedRole="admin"><AdminVerificationScreen /></ProtectedRoute> },
 ]);
 
 export default function App() {

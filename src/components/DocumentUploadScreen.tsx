@@ -1,15 +1,19 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router';
 import { motion } from 'motion/react';
-import { ArrowLeft, Upload, FileText, Award, Image as ImageIcon, CheckCircle } from 'lucide-react';
+import { ArrowLeft, Upload, FileText, Award, Image as ImageIcon, CheckCircle, Loader2 } from 'lucide-react';
+import API from '../api';
 
 export function DocumentUploadScreen() {
   const navigate = useNavigate();
-  const [uploads, setUploads] = useState({
+  const [uploads, setUploads] = useState<Record<string, boolean>>({
     id: false,
     certificate: false,
     workPhoto: false,
   });
+  const [loading, setLoading] = useState<Record<string, boolean>>({});
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [currentDocType, setCurrentDocType] = useState<string | null>(null);
 
   const documents = [
     {
@@ -32,8 +36,37 @@ export function DocumentUploadScreen() {
     },
   ];
 
-  const handleUpload = (docId: string) => {
-    setUploads((prev) => ({ ...prev, [docId]: true }));
+  const handleUploadClick = (docId: string) => {
+    setCurrentDocType(docId);
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !currentDocType) return;
+
+    setLoading(prev => ({ ...prev, [currentDocType]: true }));
+    const docName = documents.find(d => d.id === currentDocType)?.name || currentDocType;
+
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      await API.post(`/upload-technician-document?doc_type=${encodeURIComponent(docName)}`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      setUploads(prev => ({ ...prev, [currentDocType]: true }));
+    } catch (err) {
+      console.error('Upload failed:', err);
+      alert('Failed to upload document. Please try again.');
+    } finally {
+      setLoading(prev => ({ ...prev, [currentDocType]: false }));
+      setCurrentDocType(null);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
   };
 
   const handleSubmit = () => {
@@ -41,7 +74,7 @@ export function DocumentUploadScreen() {
       alert('Please upload all required documents');
       return;
     }
-    navigate('/technician/dashboard');
+    navigate('/technician/verification-pending');
   };
 
   const allUploaded = Object.values(uploads).every((v) => v);
@@ -90,11 +123,16 @@ export function DocumentUploadScreen() {
                     </div>
                   ) : (
                     <button
-                      onClick={() => handleUpload(doc.id)}
-                      className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-xl font-medium hover:bg-blue-700 transition"
+                      onClick={() => handleUploadClick(doc.id)}
+                      disabled={loading[doc.id]}
+                      className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-xl font-medium hover:bg-blue-700 transition disabled:opacity-50"
                     >
-                      <Upload className="w-4 h-4" />
-                      Upload
+                      {loading[doc.id] ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <Upload className="w-4 h-4" />
+                      )}
+                      {loading[doc.id] ? 'Uploading...' : 'Upload'}
                     </button>
                   )}
                 </div>
@@ -114,6 +152,13 @@ export function DocumentUploadScreen() {
             <p className="text-green-700 text-sm">Ready to submit for verification</p>
           </motion.div>
         )}
+        <input
+          type="file"
+          ref={fileInputRef}
+          onChange={handleFileChange}
+          className="hidden"
+          accept="image/*,.pdf"
+        />
       </motion.div>
 
       {/* Submit Button */}

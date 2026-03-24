@@ -12,6 +12,8 @@ export function LocationSelectionScreen() {
     zipCode: '',
   });
 
+  const [isFetching, setIsFetching] = useState(false);
+
   const handleContinue = () => {
     if (location.address && location.city) {
       localStorage.setItem('userLocation', JSON.stringify(location));
@@ -19,13 +21,44 @@ export function LocationSelectionScreen() {
     }
   };
 
+  const fetchLocationData = async (pincode: string) => {
+    if (pincode.length !== 6) return;
+    
+    setIsFetching(true);
+    try {
+      const response = await fetch(`https://api.postalpincode.in/pincode/${pincode}`);
+      const data = await response.json();
+      
+      if (data[0].Status === "Success" && data[0].PostOffice && data[0].PostOffice.length > 0) {
+        const info = data[0].PostOffice[0];
+        setLocation(prev => ({
+          ...prev,
+          city: info.District,
+          state: info.State
+        }));
+      }
+    } catch (error) {
+      console.error("Error fetching location data:", error);
+    } finally {
+      setIsFetching(false);
+    }
+  };
+
+  const handlePincodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.replace(/\D/g, '').slice(0, 6);
+    setLocation({ ...location, zipCode: value });
+    if (value.length === 6) {
+      fetchLocationData(value);
+    }
+  };
+
   const handleUseCurrentLocation = () => {
     // In a real app, this would use geolocation API
     setLocation({
       address: '123 Main Street',
-      city: 'San Francisco',
-      state: 'CA',
-      zipCode: '94102',
+      city: 'Chennai',
+      state: 'Tamil Nadu',
+      zipCode: '600012',
     });
   };
 
@@ -105,13 +138,20 @@ export function LocationSelectionScreen() {
                   <label className="text-gray-700 font-bold mb-2 block text-sm">
                     City *
                   </label>
-                  <input
-                    type="text"
-                    value={location.city}
-                    onChange={(e) => setLocation({ ...location, city: e.target.value })}
-                    placeholder="San Francisco"
-                    className="w-full px-4 py-4 bg-gray-50 rounded-xl border-2 border-gray-200 focus:border-[#136dec] focus:outline-none transition-all"
-                  />
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={location.city}
+                      onChange={(e) => setLocation({ ...location, city: e.target.value })}
+                      placeholder="e.g. Chennai"
+                      className="w-full px-4 py-4 bg-gray-50 rounded-xl border-2 border-gray-200 focus:border-[#136dec] focus:outline-none transition-all disabled:opacity-75"
+                    />
+                    {isFetching && (
+                      <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                        <div className="w-5 h-5 border-2 border-[#136dec] border-t-transparent rounded-full animate-spin"></div>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 {/* State & Zip */}
@@ -123,10 +163,9 @@ export function LocationSelectionScreen() {
                     <input
                       type="text"
                       value={location.state}
-                      onChange={(e) => setLocation({ ...location, state: e.target.value.toUpperCase() })}
-                      placeholder="CA"
-                      maxLength={2}
-                      className="w-full px-4 py-4 bg-gray-50 rounded-xl border-2 border-gray-200 focus:border-[#136dec] focus:outline-none transition-all uppercase"
+                      onChange={(e) => setLocation({ ...location, state: e.target.value })}
+                      placeholder="e.g. Tamil Nadu"
+                      className="w-full px-4 py-4 bg-gray-50 rounded-xl border-2 border-gray-200 focus:border-[#136dec] focus:outline-none transition-all uppercase disabled:opacity-75"
                     />
                   </div>
                   <div>
@@ -136,9 +175,9 @@ export function LocationSelectionScreen() {
                     <input
                       type="text"
                       value={location.zipCode}
-                      onChange={(e) => setLocation({ ...location, zipCode: e.target.value })}
-                      placeholder="94102"
-                      maxLength={5}
+                      onChange={handlePincodeChange}
+                      placeholder="600012"
+                      maxLength={6}
                       className="w-full px-4 py-4 bg-gray-50 rounded-xl border-2 border-gray-200 focus:border-[#136dec] focus:outline-none transition-all"
                     />
                   </div>

@@ -1,11 +1,11 @@
-import { ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { Navigate, useLocation } from 'react-router';
 import { useAuth } from '../contexts/AuthContext';
 import { WebLayout } from './WebLayout';
 
 interface ProtectedRouteProps {
     children: ReactNode;
-    allowedRole?: 'customer' | 'technician';
+    allowedRole?: 'customer' | 'technician' | 'admin';
 }
 
 export function ProtectedRoute({ children, allowedRole }: ProtectedRouteProps) {
@@ -20,6 +20,14 @@ export function ProtectedRoute({ children, allowedRole }: ProtectedRouteProps) {
         if (user.role.toLowerCase() !== allowedRole) {
             return <Navigate to="/role-selection" replace />;
         }
+
+        // Logic for unverified technicians
+        if (user.role.toLowerCase() === 'technician' &&
+            user.verification_status?.toLowerCase() !== 'approved' &&
+            user.verification_status?.toLowerCase() !== 'verified' &&
+            !['/technician/documents', '/technician/verification-pending', '/technician/register'].includes(location.pathname)) {
+            return <Navigate to="/technician/verification-pending" replace />;
+        }
     }
 
     // List of paths that should NOT have the layout even if protected
@@ -28,7 +36,7 @@ export function ProtectedRoute({ children, allowedRole }: ProtectedRouteProps) {
 
     if (shouldShowLayout) {
         return (
-            <WebLayout role={user?.role?.toLowerCase() as 'customer' | 'technician'}>
+            <WebLayout role={user?.role?.toLowerCase() as 'customer' | 'technician' | 'admin'}>
                 {children}
             </WebLayout>
         );

@@ -3,11 +3,9 @@ import { useNavigate } from 'react-router';
 import { Mail, Lock, User, Phone, ArrowRight, Zap, Eye, EyeOff, ArrowLeft } from 'lucide-react';
 import { motion } from 'motion/react';
 import API from '../api';
-import { useAuth } from '../contexts/AuthContext';
 
 export function RegisterScreen() {
     const navigate = useNavigate();
-    const { login } = useAuth();
 
     const [formData, setFormData] = useState({
         name: '',
@@ -19,57 +17,81 @@ export function RegisterScreen() {
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirm, setShowConfirm] = useState(false);
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState('');
+    const [errors, setErrors] = useState<Record<string, string>>({});
+
+    const validateField = (field: string, value: string, currentFormData = formData) => {
+        switch (field) {
+            case 'name':
+                if (!value) return 'Full Name is required';
+                if (/\d/.test(value)) return 'Full name should not contain numbers';
+                break;
+            case 'email':
+                if (!value) return 'Email Address is required';
+                if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim())) return 'Please enter a valid email address';
+                break;
+            case 'phone':
+                if (!value) return 'Phone Number is required';
+                if (value.trim().length !== 10) return 'Phone number must be exactly 10 digits';
+                break;
+            case 'password':
+                if (!value) return 'Password is required';
+                if (value.length < 8) return 'Password must be at least 8 characters';
+                if (!/^[A-Z]/.test(value)) return 'Password must start with a capital letter';
+                if (!/[!@#$%^&*(),.?":{}|<>]/.test(value)) return 'Password must contain at least one special character';
+                break;
+            case 'confirmPassword':
+                if (!value) return 'Confirm Password is required';
+                if (value !== currentFormData.password) return 'Passwords do not match';
+                break;
+        }
+        return '';
+    };
 
     const handleChange = (field: string, value: string) => {
-        setFormData((prev) => ({ ...prev, [field]: value }));
-        setError('');
+        let newValue = value;
+        if (field === 'phone') {
+            newValue = value.replace(/\D/g, '').slice(0, 10);
+        }
+        
+        const newFormData = { ...formData, [field]: newValue };
+        setFormData(newFormData);
+        
+        const fieldError = validateField(field, newValue, newFormData);
+        setErrors((prev) => ({ ...prev, [field]: fieldError }));
     };
 
     const handleRegister = async () => {
-        const { name, email, phone, password, confirmPassword } = formData;
+        const newErrors: Record<string, string> = {};
+        Object.keys(formData).forEach(key => {
+            const error = validateField(key, formData[key as keyof typeof formData], formData);
+            if (error) newErrors[key] = error;
+        });
 
-        if (!name || !email || !phone || !password || !confirmPassword) {
-            setError('Please fill in all fields');
-            return;
-        }
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(email.trim())) {
-            setError('Please enter a valid email address');
-            return;
-        }
-        if (password.length < 6) {
-            setError('Password must be at least 6 characters');
-            return;
-        }
-        if (password !== confirmPassword) {
-            setError('Passwords do not match');
+        if (Object.keys(newErrors).length > 0) {
+            setErrors(newErrors);
             return;
         }
 
         setLoading(true);
         try {
-            const res = await API.post('/register', {
-                full_name: name.trim(),
-                email: email.trim().toLowerCase(),
-                phone: phone.trim(),
-                password,
+            await API.post('/register', {
+                full_name: formData.name.trim(),
+                email: formData.email.trim().toLowerCase(),
+                phone: formData.phone.trim(),
+                password: formData.password,
             });
-            const { access_token, user } = res.data;
-            if (access_token && user) {
-                login(access_token, user);
-            }
-            navigate('/role-selection');
+            
+            // Navigate to login after successful registration
+            navigate('/login', { state: { message: 'Registration successful! Please login.' } });
         } catch (err: unknown) {
             const axiosErr = err as { response?: { data?: { detail?: unknown } } };
             const detail = axiosErr?.response?.data?.detail;
             if (Array.isArray(detail)) {
-                // Handle Pydantic validation error lists
-                setError(detail.map((d: { msg?: string }) => d.msg || '').join(', ') || 'Registration failed.');
+                setErrors({ general: detail.map((d: { msg?: string }) => d.msg || '').join(', ') || 'Registration failed.' });
             } else if (typeof detail === 'string') {
-                setError(detail);
+                setErrors({ general: detail });
             } else {
-                setError('Registration failed. Please try again.');
+                setErrors({ general: 'Registration failed. Please try again.' });
             }
         } finally {
             setLoading(false);
@@ -133,9 +155,9 @@ export function RegisterScreen() {
                                 <p className="text-gray-600">Join thousands of happy customers</p>
                             </div>
 
-                            {error && (
+                            {errors.general && (
                                 <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm font-medium">
-                                    {error}
+                                    {errors.general}
                                 </div>
                             )}
 
@@ -149,9 +171,12 @@ export function RegisterScreen() {
                                         placeholder="Enter your full name"
                                         value={formData.name}
                                         onChange={(e) => handleChange('name', e.target.value)}
-                                        className="w-full pl-12 pr-4 py-4 bg-gray-50 rounded-xl border-2 border-gray-200 focus:border-[#136dec] focus:outline-none text-base transition-all"
+                                        className={`w-full pl-12 pr-4 py-4 bg-gray-50 rounded-xl border-2 transition-all focus:outline-none text-base ${
+                                            errors.name ? 'border-red-500 focus:border-red-500' : 'border-gray-200 focus:border-[#136dec]'
+                                        }`}
                                     />
                                 </div>
+                                {errors.name && <p className="text-red-500 text-xs mt-1 ml-1">{errors.name}</p>}
                             </div>
 
                             {/* Email */}
@@ -164,9 +189,12 @@ export function RegisterScreen() {
                                         placeholder="Enter your email"
                                         value={formData.email}
                                         onChange={(e) => handleChange('email', e.target.value)}
-                                        className="w-full pl-12 pr-4 py-4 bg-gray-50 rounded-xl border-2 border-gray-200 focus:border-[#136dec] focus:outline-none text-base transition-all"
+                                        className={`w-full pl-12 pr-4 py-4 bg-gray-50 rounded-xl border-2 transition-all focus:outline-none text-base ${
+                                            errors.email ? 'border-red-500 focus:border-red-500' : 'border-gray-200 focus:border-[#136dec]'
+                                        }`}
                                     />
                                 </div>
+                                {errors.email && <p className="text-red-500 text-xs mt-1 ml-1">{errors.email}</p>}
                             </div>
 
                             {/* Phone */}
@@ -179,9 +207,12 @@ export function RegisterScreen() {
                                         placeholder="Enter your phone number"
                                         value={formData.phone}
                                         onChange={(e) => handleChange('phone', e.target.value)}
-                                        className="w-full pl-12 pr-4 py-4 bg-gray-50 rounded-xl border-2 border-gray-200 focus:border-[#136dec] focus:outline-none text-base transition-all"
+                                        className={`w-full pl-12 pr-4 py-4 bg-gray-50 rounded-xl border-2 transition-all focus:outline-none text-base ${
+                                            errors.phone ? 'border-red-500 focus:border-red-500' : 'border-gray-200 focus:border-[#136dec]'
+                                        }`}
                                     />
                                 </div>
+                                {errors.phone && <p className="text-red-500 text-xs mt-1 ml-1">{errors.phone}</p>}
                             </div>
 
                             {/* Password */}
@@ -194,7 +225,9 @@ export function RegisterScreen() {
                                         placeholder="Create a password"
                                         value={formData.password}
                                         onChange={(e) => handleChange('password', e.target.value)}
-                                        className="w-full pl-12 pr-12 py-4 bg-gray-50 rounded-xl border-2 border-gray-200 focus:border-[#136dec] focus:outline-none text-base transition-all"
+                                        className={`w-full pl-12 pr-12 py-4 bg-gray-50 rounded-xl border-2 transition-all focus:outline-none text-base ${
+                                            errors.password ? 'border-red-500 focus:border-red-500' : 'border-gray-200 focus:border-[#136dec]'
+                                        }`}
                                     />
                                     <button
                                         type="button"
@@ -204,6 +237,7 @@ export function RegisterScreen() {
                                         {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                                     </button>
                                 </div>
+                                {errors.password && <p className="text-red-500 text-xs mt-1 ml-1">{errors.password}</p>}
                             </div>
 
                             {/* Confirm Password */}
@@ -216,7 +250,9 @@ export function RegisterScreen() {
                                         placeholder="Re-enter your password"
                                         value={formData.confirmPassword}
                                         onChange={(e) => handleChange('confirmPassword', e.target.value)}
-                                        className="w-full pl-12 pr-12 py-4 bg-gray-50 rounded-xl border-2 border-gray-200 focus:border-[#136dec] focus:outline-none text-base transition-all"
+                                        className={`w-full pl-12 pr-12 py-4 bg-gray-50 rounded-xl border-2 transition-all focus:outline-none text-base ${
+                                            errors.confirmPassword ? 'border-red-500 focus:border-red-500' : 'border-gray-200 focus:border-[#136dec]'
+                                        }`}
                                     />
                                     <button
                                         type="button"
@@ -226,6 +262,7 @@ export function RegisterScreen() {
                                         {showConfirm ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                                     </button>
                                 </div>
+                                {errors.confirmPassword && <p className="text-red-500 text-xs mt-1 ml-1">{errors.confirmPassword}</p>}
                             </div>
 
                             {/* Register Button */}

@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { motion } from 'motion/react';
 import { ArrowLeft, Calendar, User, DollarSign, Star, Loader2, AlertCircle, MessageCircle } from 'lucide-react';
-import { OngoingBookingBar } from './OngoingBookingBar';
 import API from '../api';
 
 interface Booking {
@@ -71,9 +70,12 @@ export function ServiceHistoryScreen() {
   }, []);
 
   const bookings = allBookings.filter((b: Booking) => {
+    const status = b.status?.toLowerCase() || '';
     const pStatus = b.payment_status?.toLowerCase() || '';
-    const isCompleted = pStatus === 'paid';
-    const isCancelled = b.status === 'cancelled';
+    
+    // Booking is "completed" for the history if it's finished by tech OR paid
+    const isCompleted = status === 'completed' || status === 'finished' || status === 'paid' || pStatus === 'paid';
+    const isCancelled = status === 'cancelled' || status === 'rejected';
 
     if (activeTab === 'completed') return isCompleted;
     if (activeTab === 'cancelled') return isCancelled;
@@ -197,7 +199,6 @@ export function ServiceHistoryScreen() {
         )}
       </div>
 
-      <OngoingBookingBar />
     </div>
   );
 }

@@ -6,11 +6,18 @@ export interface User {
     name: string;
     email: string;
     phone?: string;
-    role?: 'customer' | 'technician';
+    role?: 'customer' | 'technician' | 'admin';
     profile_image?: string;    // kept for any legacy usage
     profile_pic_url?: string;  // actual URL from backend e.g. /uploads/profile_1_xxx.jpg
     full_name?: string;
     service_type?: string;
+    house_number?: string;
+    area?: string;
+    street?: string;
+    city?: string;
+    state?: string;
+    pincode?: string;
+    verification_status?: string;
 }
 
 interface AuthContextType {
@@ -50,6 +57,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         localStorage.removeItem('userLocation');
+        localStorage.removeItem('ongoingBooking');
     };
 
     // Listen for auth:logout events dispatched by api.ts interceptor on 401 errors.

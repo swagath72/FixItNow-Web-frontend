@@ -84,8 +84,10 @@ export function TechnicianListScreen() {
     setIsBooking(true);
     const selectedService = localStorage.getItem('selectedService') || 'Service';
 
+    const { address, date, time, description, price } = location.state || {};
+    const finalPrice = price || '₹500';
+
     try {
-      const { address, date, time, description } = location.state || {};
 
       const formattedDate = date
         ? new Date(date).toLocaleDateString('en-GB')
@@ -100,7 +102,7 @@ export function TechnicianListScreen() {
         technician_id: assignedTechnician.id,
         technician_name: assignedTechnician.name,
         customer_name: user?.full_name || user?.name || user?.email?.split('@')[0] || 'Customer',
-        cost: '₹500'
+        cost: finalPrice
       };
 
       const currentToken = localStorage.getItem('token');
@@ -110,7 +112,7 @@ export function TechnicianListScreen() {
         }
       });
 
-      const bookingId = res.data.id || assignedTechnician.id;
+      const bookingId = res.data.booking_id || res.data.id || assignedTechnician.id;
 
       setOngoingBooking({
         id: bookingId.toString(),
@@ -118,7 +120,8 @@ export function TechnicianListScreen() {
         technicianName: assignedTechnician.name,
         technicianEmail: assignedTechnician.email,
         status: 'confirmed',
-        estimatedTime: '15 mins'
+        estimatedTime: '15 mins',
+        price: finalPrice
       });
 
 
@@ -131,7 +134,8 @@ export function TechnicianListScreen() {
         technicianName: assignedTechnician.name,
         technicianEmail: assignedTechnician.email,
         status: 'confirmed',
-        estimatedTime: '15 mins'
+        estimatedTime: '15 mins',
+        price: finalPrice
       });
       navigate('/customer/tracking');
     } finally {

@@ -32,11 +32,13 @@ export function LoginScreen() {
       const data = res.data;
       // Backend returns: { token, full_name, role, phone, ... }
       const userObj = {
+        id: data.id,
         name: data.full_name,
         email: trimmedEmail,
         phone: data.phone,
         role: data.role,
         profile_pic_url: data.profile_pic_url || null,
+        verification_status: data.verification_status,
       };
 
       // Save to AuthContext and localStorage
@@ -44,9 +46,17 @@ export function LoginScreen() {
 
       const role = data.role ? data.role.toLowerCase() : '';
       if (role === 'technician') {
-        navigate('/technician/dashboard');
+        if (!data.has_completed_onboarding) {
+          navigate('/technician/documents');
+        } else if (data.verification_status?.toLowerCase() !== 'approved' && data.verification_status?.toLowerCase() !== 'verified') {
+          navigate('/technician/verification-pending');
+        } else {
+          navigate('/technician/dashboard');
+        }
       } else if (role === 'customer') {
         navigate('/customer/home');
+      } else if (role === 'admin') {
+        navigate('/admin/dashboard');
       } else {
         navigate('/role-selection');
       }
@@ -65,6 +75,8 @@ export function LoginScreen() {
       setLoading(false);
     }
   };
+
+
 
 
   const handleForgotPassword = () => {
@@ -124,7 +136,7 @@ export function LoginScreen() {
             <p className="text-2xl text-white/90 mb-8">
               Plumbing & Electrical Services
             </p>
-            <p className="text-xl text-white/80 max-w-md">
+            <p className="text-xl text-white/80 max-w-md mx-auto">
               Trusted Home Services, Instantly. Connect with verified professionals for all your electrical and plumbing needs.
             </p>
 
@@ -254,6 +266,8 @@ export function LoginScreen() {
                   </>
                 )}
               </motion.button>
+
+
 
               {/* Forgot Password */}
               <motion.div

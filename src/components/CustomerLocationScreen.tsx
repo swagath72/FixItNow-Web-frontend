@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { motion } from 'motion/react';
-import { ArrowLeft, MapPin, Navigation, Plus, Search, Home, Briefcase, Map } from 'lucide-react';
+import { MapPin, Navigation, Plus, Search, Home, Briefcase } from 'lucide-react';
 
 export function CustomerLocationScreen() {
   const navigate = useNavigate();
@@ -12,18 +12,18 @@ export function CustomerLocationScreen() {
       id: 1,
       type: 'Home',
       icon: Home,
-      address: '123 Main Street',
-      city: 'San Francisco',
-      state: 'CA',
+      address: '123 Main Street, Mylapore',
+      city: 'Chennai',
+      state: 'Tamil Nadu',
       isDefault: true
     },
     {
       id: 2,
       type: 'Office',
       icon: Briefcase,
-      address: '456 Tech Blvd, Suite 200',
-      city: 'San Francisco',
-      state: 'CA',
+      address: '456 Tech Park, OMR',
+      city: 'Chennai',
+      state: 'Tamil Nadu',
       isDefault: false
     }
   ];
@@ -33,17 +33,17 @@ export function CustomerLocationScreen() {
       address: addr.address,
       city: addr.city,
       state: addr.state,
-      zipCode: '94105'
+      zipCode: '600004'
     }));
     navigate('/customer/home');
   };
 
   const handleUseCurrentLocation = () => {
     localStorage.setItem('userLocation', JSON.stringify({
-      address: '789 Market Street',
-      city: 'San Francisco',
-      state: 'CA',
-      zipCode: '94103'
+      address: '789 Mount Road',
+      city: 'Chennai',
+      state: 'Tamil Nadu',
+      zipCode: '600002'
     }));
     navigate('/customer/home');
   };
