@@ -84,7 +84,7 @@ export function ChatListScreen({ role = 'customer' }: ChatListScreenProps) {
       } else if (status === 500) {
         setError(`Server error (500): ${detail || 'Please ensure the backend is running correctly.'}`);
       } else if (!status) {
-        setError(`Cannot reach server. Make sure the backend is running at http://localhost:8000`);
+        setError(`Cannot reach server. Make sure the backend is running at ${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}`);
       } else {
         setError(`Failed to load conversations (${status || 'Error'}). Please try again.`);
       }

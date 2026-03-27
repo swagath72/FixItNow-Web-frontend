@@ -1,12 +1,15 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { motion } from 'motion/react';
-import { User, Wrench, Zap, CheckCircle } from 'lucide-react';
+import { User, Wrench, Zap, CheckCircle, Loader2 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import API from '../api';
 
 export function RoleSelectionScreen() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
+  const [loadingRole, setLoadingRole] = useState<string | null>(null);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     if (user?.role?.toLowerCase() === 'admin') {
@@ -86,6 +89,11 @@ export function RoleSelectionScreen() {
               <p className="text-gray-600 text-lg">
                 Select how you'd like to use FIXIT NOW
               </p>
+              {error && (
+                <div className="mt-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm font-medium">
+                  {error}
+                </div>
+              )}
             </div>
 
             <div className="space-y-6">
@@ -95,16 +103,43 @@ export function RoleSelectionScreen() {
                   initial={{ x: -50, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
                   transition={{ delay: index * 0.15, duration: 0.5 }}
-                  onClick={() => navigate(role.path)}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="w-full bg-white rounded-3xl p-8 shadow-2xl hover:shadow-3xl transition-all text-left group"
+                  onClick={async () => {
+                    setError('');
+                    setLoadingRole(role.id);
+                    try {
+                      // Call backend to persist role
+                      // Backend expects "Customer" or "Technician" (Capitalized)
+                      const capitalizedRole = role.id.charAt(0).toUpperCase() + role.id.slice(1);
+                      await API.post('/select-role', { role: capitalizedRole });
+                      
+                      // Update local state
+                      updateUser({ role: role.id as 'customer' | 'technician' });
+                      
+                      // Navigate
+                      navigate(role.path);
+                    } catch (err: any) {
+                      console.error('Failed to set role:', err);
+                      setError(err.response?.data?.detail || 'Failed to select role. Please try again.');
+                    } finally {
+                      setLoadingRole(null);
+                    }
+                  }}
+                  disabled={!!loadingRole}
+                  whileHover={{ scale: loadingRole ? 1 : 1.02 }}
+                  whileTap={{ scale: loadingRole ? 1 : 0.98 }}
+                  className={`w-full bg-white rounded-3xl p-8 shadow-2xl transition-all text-left group ${
+                    loadingRole === role.id ? 'opacity-70 ring-2 ring-blue-500' : 'hover:shadow-3xl'
+                  }`}
                 >
                   <div className="flex items-start gap-6">
                     <div
-                      className={`w-20 h-20 rounded-2xl bg-gradient-to-br ${role.gradient} flex items-center justify-center group-hover:scale-110 transition-transform flex-shrink-0`}
+                      className={`w-20 h-20 rounded-2xl bg-gradient-to-br ${role.gradient} flex items-center justify-center group-hover:scale-110 transition-transform flex-shrink-0 relative`}
                     >
-                      <role.icon className="w-10 h-10 text-white" />
+                      {loadingRole === role.id ? (
+                        <Loader2 className="w-10 h-10 text-white animate-spin" />
+                      ) : (
+                        <role.icon className="w-10 h-10 text-white" />
+                      )}
                     </div>
                     <div className="flex-1">
                       <h3 className="text-2xl font-bold text-[#0f172a] mb-2">

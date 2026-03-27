@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { motion } from 'motion/react';
 import { CheckCircle, Clock, User, Briefcase, FileText, Loader2, AlertCircle, ChevronRight } from 'lucide-react';
-import API from '../api';
+import API, { BASE_URL } from '../api';
 import { useAuth } from '../contexts/AuthContext';
 
 interface PendingTechnician {
@@ -127,7 +127,7 @@ export function AdminDashboardScreen() {
                   <div className="w-20 h-20 rounded-2xl overflow-hidden bg-gray-50 border-2 border-gray-100 shadow-sm group-hover:border-[#136dec]/30 transition-colors shrink-0">
                     {tech.profile_pic_url ? (
                       <img
-                        src={`http://localhost:8000${tech.profile_pic_url}`}
+                        src={`${BASE_URL}${tech.profile_pic_url}`}
                         alt={tech.full_name}
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                         onError={(e) => { (e.target as HTMLImageElement).src = 'https://ui-avatars.com/api/?name=User&background=random'; }}

@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Star, Phone, MessageCircle, CheckCircle2, Search, Loader2 } from 'lucide-react';
 import { useBooking } from '../contexts/BookingContext';
 import { useAuth } from '../contexts/AuthContext';
-import API from '../api';
+import API, { BASE_URL } from '../api';
 
 export function TechnicianListScreen() {
   const navigate = useNavigate();
@@ -15,7 +15,6 @@ export function TechnicianListScreen() {
   const [isSearching, setIsSearching] = useState(true);
   const [isBooking, setIsBooking] = useState(false);
   const { setOngoingBooking } = useBooking();
-  const BASE_URL = 'http://localhost:8000';
 
   const buildPicUrl = (picUrl?: string | null) => {
     if (!picUrl) return 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop';

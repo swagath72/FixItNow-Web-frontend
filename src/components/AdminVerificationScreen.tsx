@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router';
 import { motion, AnimatePresence } from 'motion/react';
 import { ArrowLeft, User, Briefcase, FileText, CheckCircle, XCircle, Loader2, AlertCircle, Phone, Mail, Clock } from 'lucide-react';
-import API from '../api';
+import API, { BASE_URL } from '../api';
 import { useAuth } from '../contexts/AuthContext';
 
 interface TechDoc {
@@ -126,10 +126,10 @@ export function AdminVerificationScreen() {
                 <div className="w-28 h-28 rounded-3xl overflow-hidden bg-gray-50 border-4 border-white shadow-lg mb-6 transform -rotate-3 hover:rotate-0 transition-transform duration-500">
                   {technician.profile_pic_url ? (
                     <img
-                      src={`http://localhost:8000${technician.profile_pic_url}`}
+                      src={`${BASE_URL}${technician.profile_pic_url}`}
                       alt="Profile"
                       className="w-full h-full object-cover"
-                      onClick={() => setSelectedImage(`http://localhost:8000${technician.profile_pic_url}`)}
+                      onClick={() => setSelectedImage(`${BASE_URL}${technician.profile_pic_url}`)}
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center bg-blue-50">
@@ -217,7 +217,7 @@ export function AdminVerificationScreen() {
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 flex-grow">
                   {documents.map((doc, idx) => {
-                    const docUrl = `http://localhost:8000${doc.file_url}`;
+                    const docUrl = `${BASE_URL}${doc.file_url}`;
                     return (
                       <motion.div 
                         key={doc.id} 

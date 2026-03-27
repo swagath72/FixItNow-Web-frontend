@@ -7,7 +7,7 @@ import {
   Settings, Heart, FileText, ChevronRight,
   Wallet, Globe, MessageSquare, Loader2, User
 } from 'lucide-react';
-import API from '../api';
+import API, { BASE_URL } from '../api';
 import { useAuth } from '../contexts/AuthContext';
 
 interface ProfileScreenProps {
@@ -18,7 +18,6 @@ export function ProfileScreen({ role = 'customer' }: ProfileScreenProps) {
   const navigate = useNavigate();
   const { user, logout, updateUser } = useAuth();
 
-  const BASE_URL = 'http://localhost:8000';
 
   const buildPicUrl = (picUrl?: string | null) =>
     picUrl ? `${BASE_URL}${picUrl}` : null;

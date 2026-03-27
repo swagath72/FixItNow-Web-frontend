@@ -3,7 +3,8 @@ import os
 import requests
 
 # Set up paths
-backend_url = "http://127.0.0.1:8000"
+backend_url = "http://180.235.121.253:8125"
+
 booking_id = 47
 token = "ch@gmail.com" # Use the token from our previous successful login test
 

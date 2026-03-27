@@ -9,6 +9,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { OngoingBookingBar } from './OngoingBookingBar';
+import { BASE_URL } from '../api';
 
 interface WebLayoutProps {
   children: ReactNode;
@@ -27,7 +28,6 @@ export function WebLayout({
   const [userLocation, setUserLocation] = useState('');
   const { user, logout } = useAuth();
   const userName = user?.full_name || user?.name || user?.email?.split('@')[0] || 'User';
-  const BASE_URL = 'http://localhost:8000';
   const profilePicUrl = user?.profile_pic_url ? `${BASE_URL}${user.profile_pic_url}` : null;
   // Generate initials for fallback avatar
   const initials = userName.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2);
